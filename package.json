@@ -3,13 +3,16 @@
   "description": "",
   "version": "1.0.0",
   "scripts": {
+    "install-all": "npm install && cd ./webapp && npm install && cd ../",
     "test": "truffle test",
     "compile": "truffle compile",
     "migrate": "truffle migrate",
     "testrpc": "testrpc -m \"spike dizzy clump wrist receive limb interest half item lunch betray vivid\""
   },
   "devDependencies": {
-    "ethereumjs-testrpc": "^4.1.1"
+    "bignumber.js": "^4.0.4",
+    "ethereumjs-testrpc": "^4.1.1",
+    "ramda": "^0.24.1"
   },
   "dependencies": {
     "web3": "^0.20.1",
