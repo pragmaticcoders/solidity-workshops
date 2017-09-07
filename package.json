@@ -9,13 +9,12 @@
     "testrpc": "cd testrpc && npm start"
   },
   "devDependencies": {
-    "@digix/tempo": "^0.2.0",
     "bignumber.js": "^4.0.4",
-    "ethereumjs-testrpc": "^4.1.1",
-    "ramda": "^0.24.1"
+    "ramda": "^0.24.1",
+    "@digix/tempo": "^0.2.0"
   },
   "dependencies": {
-    "web3": "^0.20.1",
-    "truffle": "^3.4.9"
+    "truffle": "^3.4.9",
+    "web3": "^0.20.1"
   }
 }

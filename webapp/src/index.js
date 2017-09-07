@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import RouletteApp from './RouletteApp';
+import LottoApp from './LottoApp';
 
 ReactDOM.render(
-  <RouletteApp />,
+  <LottoApp />,
   document.getElementById('root')
 );

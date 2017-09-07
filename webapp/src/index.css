@@ -20,3 +20,20 @@ body {
     padding: 20px;
     background-color: #f4f5f6;
 }
+
+.ticket {
+    line-height: 4rem;
+    text-align: center;
+    padding: 5px;
+    margin: 5px;
+    background-color: #f4f5f6;
+    display: inline-block;
+    border-radius: 30px;
+    width: 5rem;
+    height: 5rem;
+    font-weight: bold;
+}
+
+.ticket-selfie {
+    background-color: #e8ffc9;
+}
