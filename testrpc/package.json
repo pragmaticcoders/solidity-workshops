@@ -1,0 +1,19 @@
+{
+  "name": "ether-lotto-testrpc",
+  "description": "",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "dependencies": {
+    "ethereumjs-testrpc": "^4.1.1",
+    "truffle-artifactor": "^2.1.5",
+    "truffle-compile": "^2.0.7",
+    "truffle-config": "^1.0.2",
+    "truffle-migrate": "^1.1.5",
+    "truffle-resolver": "^3.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  }
+}

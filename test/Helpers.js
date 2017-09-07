@@ -70,6 +70,17 @@ module.exports.assertInvalidOpcode = error => {
   }
 };
 
+
+module.exports.mineBlock = async () => {
+  return promisify(cb =>
+    web3.currentProvider.sendAsync({
+      jsonrpc: "2.0",
+      method: "evm_mine",
+      id: 12345
+    }, cb),
+  );
+}
+
 module.exports.transferFrom = (from, to, value) => {
   return promisify(cb =>
     web3.eth.sendTransaction(
