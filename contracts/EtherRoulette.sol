@@ -2,15 +2,22 @@ pragma solidity ^0.4.15;
 
 
 contract EtherRoulette {
+    address public owner;
     uint public maxNumber;
 
     event Won(address indexed account, uint selectedNumber, uint value, uint profit);
 
     event Lost(address indexed account, uint selectedNumber, uint drawnNumber, uint value);
 
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
     function EtherRoulette(uint _maxNumber) payable {
         require(_maxNumber >= 3);
 
+        owner = msg.sender;
         maxNumber = _maxNumber;
     }
 
@@ -29,6 +36,10 @@ contract EtherRoulette {
         else {
             Lost(msg.sender, selectedNumber, drawnNumber, msg.value);
         }
+    }
+
+    function payout() onlyOwner {
+        owner.transfer(this.balance);
     }
 
     function() payable {}

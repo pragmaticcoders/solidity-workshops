@@ -3,7 +3,7 @@ const {
   getBlock,
   getBalance,
   getEventFromLogs,
-  transferFrom,
+  assertThrowsInvalidOpcode,
   assertNumberEqual,
   assertValueEqual,
   assertValueAlmostEqual
@@ -22,7 +22,8 @@ const EXPECTED_PROFIT = (MAX_NUMBER - 2) * VALUE;
 const EXPECTED_PROFIT_WEI = web3.toWei(EXPECTED_PROFIT, 'ether');
 
 contract(`EtherRoulette with max number of ${MAX_NUMBER}`, accounts => {
-  const ACCOUNT = accounts[0];
+  const OWNER = accounts[0];
+  const ACCOUNT = accounts[1];
 
   let roulette;
   let initialBalance;
@@ -30,10 +31,9 @@ contract(`EtherRoulette with max number of ${MAX_NUMBER}`, accounts => {
 
   beforeEach(async () => {
     roulette = await EtherRoulette.new(MAX_NUMBER, {
-      from: ACCOUNT
+      from: OWNER,
+      value: EXPECTED_PROFIT_WEI
     });
-
-    await transferFrom(ACCOUNT, roulette.address, EXPECTED_PROFIT_WEI);
 
     initialBalance = await getBalance(ACCOUNT);
     expectedNumber = await getExpectedNumber();
@@ -62,6 +62,30 @@ contract(`EtherRoulette with max number of ${MAX_NUMBER}`, accounts => {
       assertNumberEqual(event.args.selectedNumber, expectedNumber);
       assertValueEqual(event.args.value, VALUE_WEI);
       assertValueEqual(event.args.profit, EXPECTED_PROFIT_WEI);
+    });
+
+    it('Should return all ether to owner on payout by owner', async () => {
+      let initialBalance = await getBalance(OWNER);
+      let rouletteBalance = await getBalance(roulette.address);
+
+      await roulette.payout({
+        from: OWNER
+      });
+
+      const balance = await getBalance(OWNER);
+      const newRouletteBalance = await getBalance(roulette.address);
+      const acceptableError = web3.toWei(0.01, 'ether');
+
+      assertValueAlmostEqual(balance, initialBalance.add(rouletteBalance), acceptableError);
+      assertValueEqual(newRouletteBalance, 0);
+    });
+
+    it('Should throw on payout by non-owner', async () => {
+      assertThrowsInvalidOpcode(async () => {
+        await roulette.payout({
+          from: ACCOUNT
+        });
+      });
     });
   });
 

@@ -48,6 +48,28 @@ module.exports.assertValueAlmostEqual = (actual, expect, epsilon) => {
   return assertNumberAlmostEqual(actual, expect, epsilon, ETH_DECIMALS);
 };
 
+module.exports.assertThrowsInvalidOpcode = async action => {
+  try {
+    await action();
+  } catch (error) {
+    module.exports.assertInvalidOpcode(error);
+    return;
+  }
+  assert.fail('Should have thrown');
+};
+
+module.exports.assertInvalidOpcode = error => {
+  if (error && error.message) {
+    assert.isAbove(
+      error.message.search('invalid opcode'),
+      -1,
+      'Invalid opcode error must be returned'
+    );
+  } else {
+    assert.fail(error, {}, 'Expected to throw an error');
+  }
+};
+
 module.exports.transferFrom = (from, to, value) => {
   return promisify(cb =>
     web3.eth.sendTransaction(
