@@ -21,6 +21,8 @@ class LottoApp extends Component {
       lastBlock: null,
       prize: null,
       lastDraw: null,
+      drawing: false,
+      fillingTicket: false,
     };
   }
 
@@ -115,6 +117,8 @@ class LottoApp extends Component {
       fromBlock: 0,
       toBlock: 'latest',
     }).watch((err, event) => {
+      console.log('event', event);
+      this.loadPrize();
       if (event.event === 'Won') {
         this.handleWonEvent(event);
       } else if (event.event === 'Cumulation') {
@@ -140,7 +144,6 @@ class LottoApp extends Component {
 
     if (event.args.account === this.state.account) {
       this.loadBalance();
-
       state = 'won';
     } else {
       state = 'lost';
@@ -148,6 +151,7 @@ class LottoApp extends Component {
 
     this.setState({
       tickets: [],
+      drawing: false,
       lastDraw: {
         state,
         profit: toEth(event.args.profit).toNumber(),
@@ -159,6 +163,7 @@ class LottoApp extends Component {
   handleCumulationEvent (event) {
     this.setState({
       tickets: [],
+      drawing: false,
       lastDraw: {
         state: 'cumulation',
         number: event.args.drawnNumber,
@@ -170,19 +175,23 @@ class LottoApp extends Component {
     const ticket = {
       number: event.args.selectedNumber.toNumber(),
       selfie: event.args.account === this.state.account,
-    }
+    };
 
-    this.loadPrize();
     this.loadLastBlock();
 
     this.setState({
-      tickets: this.state.tickets.concat([ticket])
+      tickets: this.state.tickets.concat([ticket]),
     });
+
+    if (this.state.fillingTicket && ticket.selfie) {
+      this.setState({ fillingTicket: false });
+    }
   }
 
   onFillTicket = () => {
     const number = parseInt(prompt('Enter a number'), 10);
 
+    this.setState({ fillingTicket: true });
     this.state.instance.fillTicket(
       number, {
         value: toWei(this.state.fee),
@@ -192,6 +201,7 @@ class LottoApp extends Component {
   }
 
   onDraw = () => {
+    this.setState({ drawing: true });
     this.state.instance.draw({
       gas: 200000,
     });
@@ -216,6 +226,8 @@ class LottoApp extends Component {
           lastBlockNumber={this.state.lastBlock}
           onFillTicket={this.onFillTicket}
           onDraw={this.onDraw}
+          fillingTicket={this.state.fillingTicket}
+          drawing={this.state.drawing}
           />
       </div>
     );
@@ -278,7 +290,8 @@ const LastDrawComponent = ({ lastDraw }) => {
 const LottoComponent = ({
   currentBlockNumber, lastBlockNumber,
   maxNumber, prize, tickets, fee,
-  onFillTicket, onDraw
+  onFillTicket, onDraw, fillingTicket,
+  drawing,
 }) => {
   if (!maxNumber) {
     return (<div>Loading contract information...</div>);
@@ -290,7 +303,7 @@ const LottoComponent = ({
     </span>
   ));
 
-  const drawEnabled = currentBlockNumber > lastBlockNumber;
+  const drawEnabled = currentBlockNumber > lastBlockNumber && !drawing;
 
   return (
     <div className="container">
@@ -317,12 +330,17 @@ const LottoComponent = ({
       </div>
       <div className="row">
       <div className="column column-40">Filled tickets:</div>
-      <div>{balls}</div>
+      <div>
+        {balls}
+        {fillingTicket ? (<div>Filling ticket...</div>) : null}
+      </div>
       </div>
       <hr/>
       <button className="button-large" onClick={onFillTicket}>Place a bet</button>
 
-      <button className="button-large float-right" disabled={!drawEnabled} onClick={onDraw}>Draw</button>
+      <button className="button-large float-right" disabled={!drawEnabled} onClick={onDraw}>
+          {drawing ? "Drawing..." : "Draw"}
+      </button>
     </div>
   );
 };
