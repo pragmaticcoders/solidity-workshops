@@ -6,7 +6,8 @@
     "test": "truffle test",
     "compile": "truffle compile",
     "migrate": "truffle migrate",
-    "testrpc": "cd testrpc && npm start"
+    "testrpc": "cd testrpc && npm start",
+    "migrate:kovan": "truffle migrate --network kovan"
   },
   "devDependencies": {
     "bignumber.js": "^4.0.4",
