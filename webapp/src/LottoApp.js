@@ -14,6 +14,7 @@ class LottoApp extends Component {
     this.state = {
       web3: null,
       instance: null,
+      instanceOwner: null,
       account: null,
       balance: null,
       maxNumber: null,
@@ -23,6 +24,8 @@ class LottoApp extends Component {
       lastDraw: null,
       drawing: false,
       fillingTicket: false,
+      redeemingPrize: false,
+      ownerCollecting: false,
     };
   }
 
@@ -87,7 +90,9 @@ class LottoApp extends Component {
     const feeWei = (await instance.ticketFee.call()).toNumber();
     const fee = toEth(feeWei);
 
-    this.setState({ maxNumber, fee });
+    const instanceOwner = await instance.owner.call();
+
+    this.setState({ maxNumber, fee, instanceOwner });
 
     await this.loadPrize();
     await this.loadLastBlock();
@@ -125,6 +130,10 @@ class LottoApp extends Component {
         this.handleCumulationEvent(event);
       } else if (event.event === 'TicketFilled') {
         this.handleTicketFilledEvent(event);
+      } else if (event.event === 'PrizeRedeemed') {
+        this.handlePrizeRedeemedEvent(event);
+      } else if (event.event === 'OwnerCollected') {
+        this.handleOwnerCollectedEvent(event);
       } else {
         console.error('Unknown event', event);
       }
@@ -188,6 +197,16 @@ class LottoApp extends Component {
     }
   }
 
+  handlePrizeRedeemedEvent (event) {
+    if (event.args.account === this.state.account) {
+      this.setState({ redeemingPrize: false });
+    }
+  }
+
+  handleOwnerCollectedEvent (event) {
+    this.setState({ ownerCollecting: false });
+  }
+
   onFillTicket = () => {
     const number = parseInt(prompt('Enter a number'), 10);
 
@@ -196,6 +215,7 @@ class LottoApp extends Component {
       number, {
         value: toWei(this.state.fee),
         gas: 100000,
+        from: this.state.account
       }
     );
   }
@@ -204,6 +224,23 @@ class LottoApp extends Component {
     this.setState({ drawing: true });
     this.state.instance.draw({
       gas: 200000,
+      from: this.state.account
+    });
+  }
+
+  onRedeemPrize = () => {
+    this.setState({ redeemingPrize: true });
+    this.state.instance.redeemPrize({
+      gas: 100000,
+      from: this.state.account
+    });
+  }
+
+  onOwnerCollect = () => {
+    this.setState({ ownerCollecting: true });
+    this.state.instance.ownerCollect({
+      gas: 100000,
+      from: this.state.account
     });
   }
 
@@ -226,8 +263,13 @@ class LottoApp extends Component {
           lastBlockNumber={this.state.lastBlock}
           onFillTicket={this.onFillTicket}
           onDraw={this.onDraw}
+          onRedeemPrize={this.onRedeemPrize}
+          onOwnerCollect={this.onOwnerCollect}
           fillingTicket={this.state.fillingTicket}
           drawing={this.state.drawing}
+          redeemingPrize={this.state.redeemingPrize}
+          ownerCollecting={this.state.ownerCollecting}
+          ownerCollectEnabled={this.state.instanceOwner === this.state.account}
           />
       </div>
     );
@@ -290,8 +332,9 @@ const LastDrawComponent = ({ lastDraw }) => {
 const LottoComponent = ({
   currentBlockNumber, lastBlockNumber,
   maxNumber, prize, tickets, fee,
-  onFillTicket, onDraw, fillingTicket,
-  drawing,
+  onFillTicket, onDraw, onRedeemPrize, onOwnerCollect,
+  fillingTicket, drawing, redeemingPrize, ownerCollecting,
+  ownerCollectEnabled
 }) => {
   if (!maxNumber) {
     return (<div>Loading contract information...</div>);
@@ -333,14 +376,29 @@ const LottoComponent = ({
       <div>
         {balls}
         {fillingTicket ? (<div>Filling ticket...</div>) : null}
+        {redeemingPrize ? (<div>Redeeming prize...</div>) : null}
+        {ownerCollecting ? (<div>Owner collecting...</div>) : null}
       </div>
       </div>
       <hr/>
-      <button className="button-large" onClick={onFillTicket}>Place a bet</button>
-
-      <button className="button-large float-right" disabled={!drawEnabled} onClick={onDraw}>
-          {drawing ? "Drawing..." : "Draw"}
-      </button>
+      <div className="row">
+        <div className="column column-25">
+          <button className="button-large" onClick={onFillTicket}>Place a bet</button>
+        </div>
+        <div className="column column-25">
+          <button className="button-large" onClick={onRedeemPrize}>Redeem prize</button>
+        </div>
+        <div className="column column-25">
+          <button className="button-large" onClick={onOwnerCollect} disabled={!ownerCollectEnabled}>
+            Owner collect
+          </button>
+        </div>
+        <div className="column column-25">
+          <button className="button-large" disabled={!drawEnabled} onClick={onDraw}>
+              {drawing ? "Drawing..." : "Draw"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

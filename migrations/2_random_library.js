@@ -1,4 +1,3 @@
-const EtherRoulette = artifacts.require("./EtherRoulette.sol");
 const Random = artifacts.require("./Random.sol");
 
 async function deploy(deployer) {

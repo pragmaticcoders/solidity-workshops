@@ -77,7 +77,7 @@ module.exports.mineBlock = async () => {
       jsonrpc: "2.0",
       method: "evm_mine",
       id: 12345
-    }, cb),
+    }, cb)
   );
 }
 

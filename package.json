@@ -3,6 +3,7 @@
   "description": "",
   "version": "1.0.0",
   "scripts": {
+    "postinstall": "cd ./webapp && npm install && cd ../testrpc && npm install && cd ../",
     "test": "truffle test",
     "compile": "truffle compile",
     "migrate": "truffle migrate",

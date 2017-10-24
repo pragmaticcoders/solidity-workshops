@@ -16,9 +16,9 @@ This is a standard truffle package layout:
 
 https://metamask.io/
 
-`$ npm run install-all`
+`$ npm install`
 
-Runs `npm install` for `/` `/webapp` and `/testrpc`
+Runs `npm install` for `/webapp` and `/testrpc` in `postinstall` script.
 
 ## Running the project
 
