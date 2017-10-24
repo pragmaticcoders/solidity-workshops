@@ -81,6 +81,14 @@ module.exports.mineBlock = async () => {
   );
 }
 
+
+module.exports.mineBlocks = async (num) => {
+  for (var i = 0; i < num; i++) {
+    await module.exports.mineBlock();
+  }
+};
+
+
 module.exports.transferFrom = (from, to, value) => {
   return promisify(cb =>
     web3.eth.sendTransaction(

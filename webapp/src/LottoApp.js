@@ -19,7 +19,7 @@ class LottoApp extends Component {
       balance: null,
       maxNumber: null,
       tickets: [],
-      lastBlock: null,
+      deadlineBlock: null,
       prize: null,
       lastDraw: null,
       drawing: false,
@@ -106,9 +106,9 @@ class LottoApp extends Component {
   }
 
   async loadLastBlock() {
-    const lastBlock = (await this.state.instance.lastBlock.call()).toNumber();
+    const deadlineBlock = (await this.state.instance.deadlineBlock.call()).toNumber();
 
-    this.setState({ lastBlock });
+    this.setState({ deadlineBlock });
   }
 
   async loadBlockNumber() {
@@ -167,6 +167,8 @@ class LottoApp extends Component {
         number: event.args.selectedNumber,
       }
     });
+
+    this.loadLastBlock();
   }
 
   handleCumulationEvent (event) {
@@ -178,6 +180,8 @@ class LottoApp extends Component {
         number: event.args.drawnNumber,
       }
     });
+
+    this.loadLastBlock();
   }
 
   handleTicketFilledEvent (event) {
@@ -214,7 +218,7 @@ class LottoApp extends Component {
     this.state.instance.fillTicket(
       number, {
         value: toWei(this.state.fee),
-        gas: 100000,
+        gas: 200000,
         from: this.state.account
       }
     );
@@ -260,7 +264,7 @@ class LottoApp extends Component {
           tickets={this.state.tickets}
           prize={this.state.prize}
           currentBlockNumber={this.state.currentBlock}
-          lastBlockNumber={this.state.lastBlock}
+          deadlineBlockNumber={this.state.deadlineBlock}
           onFillTicket={this.onFillTicket}
           onDraw={this.onDraw}
           onRedeemPrize={this.onRedeemPrize}
@@ -330,7 +334,7 @@ const LastDrawComponent = ({ lastDraw }) => {
 
 
 const LottoComponent = ({
-  currentBlockNumber, lastBlockNumber,
+  currentBlockNumber, deadlineBlockNumber,
   maxNumber, prize, tickets, fee,
   onFillTicket, onDraw, onRedeemPrize, onOwnerCollect,
   fillingTicket, drawing, redeemingPrize, ownerCollecting,
@@ -346,7 +350,9 @@ const LottoComponent = ({
     </span>
   ));
 
-  const drawEnabled = currentBlockNumber > lastBlockNumber && !drawing;
+  const drawEnabled = currentBlockNumber > deadlineBlockNumber && !drawing;
+
+  deadlineBlockNumber = deadlineBlockNumber || 'No lottery in progress';
 
   return (
     <div className="container">
@@ -365,7 +371,7 @@ const LottoComponent = ({
       </div>
       <div className="row">
         <div className="column">Ends at block:</div>
-        <div className="column">{lastBlockNumber}</div>
+        <div className="column">{deadlineBlockNumber}</div>
       </div>
       <div className="row">
         <div className="column">Current block:</div>
@@ -383,7 +389,7 @@ const LottoComponent = ({
       <hr/>
       <div className="row">
         <div className="column column-25">
-          <button className="button-large" onClick={onFillTicket}>Place a bet</button>
+      <button className="button-large" onClick={onFillTicket} disabled={currentBlockNumber > deadlineBlockNumber}>Place a bet</button>
         </div>
         <div className="column column-25">
           <button className="button-large" onClick={onRedeemPrize}>Redeem prize</button>

@@ -15,9 +15,10 @@ contract MicroLotto {
     Random public random;
     uint public ticketFee;
     uint public lottoFeePercent;
+    uint public lotteryDuration;
     uint public accumulatedValue;
     uint public maxNumber;
-    uint public lastBlock;
+    uint public deadlineBlock = 0;
     mapping(uint => Ticket[]) public ticketsPerNumber;
 
     event TicketFilled(address indexed account, uint selectedNumber);
@@ -26,18 +27,12 @@ contract MicroLotto {
     event PrizeRedeemed(address indexed account, uint value);
     event OwnerCollected(uint value);
 
-    modifier updatesBlock() {
-        _;
-        lastBlock = block.number;
-    }
-
     function MicroLotto(
         Random _random,
         uint _lottoFeePercent,
-        uint _maxNumber
-    )
-        updatesBlock
-    {
+        uint _maxNumber,
+        uint _lotteryDuration
+    ) {
         require(_maxNumber >= 2);
 
         owner = msg.sender;
@@ -45,11 +40,19 @@ contract MicroLotto {
         ticketFee = 0.1 ether;  // TODO: Make it configurable during deployment
         lottoFeePercent = _lottoFeePercent;
         maxNumber = _maxNumber;
+        lotteryDuration = _lotteryDuration;
     }
 
-    function fillTicket(uint selectedNumber) public payable updatesBlock {
+    function fillTicket(uint selectedNumber) public payable {
         require(selectedNumber >= 1 && selectedNumber <= maxNumber);
         require(msg.value == ticketFee);
+
+        if (deadlineBlock == 0) {
+            // Start a new draw
+            deadlineBlock = block.number + lotteryDuration;
+        } else {
+            require(block.number <= deadlineBlock);
+        }
 
         Ticket[] storage tickets = ticketsPerNumber[selectedNumber];
         tickets.push(Ticket({
@@ -61,10 +64,13 @@ contract MicroLotto {
         TicketFilled(msg.sender, selectedNumber);
     }
 
-    function draw() public updatesBlock {
-        require(block.number > lastBlock + 1);
+    function draw() public {
+        require(block.number > deadlineBlock + 1);
 
-        uint drawnNumber = random.generate(lastBlock + 1, maxNumber);
+        uint drawnNumber = random.generate(deadlineBlock + 1, maxNumber);
+
+        deadlineBlock = 0;
+
         Ticket[] storage wonTickets = ticketsPerNumber[drawnNumber];
         if (wonTickets.length > 0) {
             uint profit = prize() / wonTickets.length;
@@ -93,7 +99,7 @@ contract MicroLotto {
         // Make sure that correct amount can be collected
         OwnerCollected(0);
     }
- 
+
     function redeemPrize() public {
         // TODO: Implementation
         PrizeRedeemed(msg.sender, 0);
