@@ -30,12 +30,13 @@ TestRPC acts like a local chain for testing and developement.
 It does not persist any state between runs.
 
 In addition to running TestRPC, this command also compiles and deploys contracts to TestRPC.
+It removes previously built ABIs from build/contracts to smooth local development, but this behaviour is not suitable for deployment to any public network.
 
 ### Running tests
 
 `$ npm run test`
 
-### Compiling contracts
+### Compiling contracts manually
 
 `$ npm run compile`
 
@@ -48,8 +49,8 @@ This generates contracts ABIs (compiled interfaces) in `/build/` directory.
 This published contracts to the blockchain and copies their generated
 addresses to their interfaces stored in `/build/`.
 
-Note that if you're deploying contracts to TestRPC they will vanish
-once it is stopped. Migration should be run each time after TestRPC is started.
+Note that if you're running `npm run testrpc` contracts are compiled and migrated automatically, without a need for compile and migrate.
+Normally, each time testrpc is started contracts would have to be migrated.
 
 ### Starting the webapp
 
