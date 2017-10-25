@@ -19,13 +19,20 @@ contract MicroLotto {
     uint public accumulatedValue;
     uint public maxNumber;
     uint public deadlineBlock = 0;
+    uint public ownerProfit = 0;
     mapping(uint => Ticket[]) public ticketsPerNumber;
+    mapping(address => uint) public prizeBalances;
 
     event TicketFilled(address indexed account, uint selectedNumber);
     event Won(address indexed account, uint selectedNumber, uint profit);
     event Cumulation(uint drawnNumber, uint value);
     event PrizeRedeemed(address indexed account, uint value);
     event OwnerCollected(uint value);
+
+    modifier onlyOwner {
+        require(msg.sender == owner);
+        _;
+    }
 
     function MicroLotto(
         Random _random,
@@ -79,9 +86,10 @@ contract MicroLotto {
             for (uint i = 0; i < wonTickets.length; i++) {
                 Ticket storage ticket = wonTickets[i];
                 // TODO: Do you see a problem here?
-                ticket.account.transfer(profit);
+                prizeBalances[ticket.account] += profit;
                 Won(ticket.account, drawnNumber, profit);
             }
+            ownerProfit += accumulatedValue - prize();
 
             // TODO: Do you see another problem here?
             accumulatedValue = 0;
@@ -94,16 +102,22 @@ contract MicroLotto {
         }
     }
 
-    function ownerCollect() public {
-        // TODO: Implementation
-        // Make sure that only owner can call this method
-        // Make sure that correct amount can be collected
-        OwnerCollected(0);
+    function ownerCollect() public onlyOwner {
+        require(ownerProfit > 0);
+        owner.transfer(ownerProfit);
+        
+        OwnerCollected(ownerProfit);
+        ownerProfit = 0;
     }
 
     function redeemPrize() public {
-        // TODO: Implementation
-        PrizeRedeemed(msg.sender, 0);
+        uint toRedeem = prizeBalances[msg.sender];
+
+        require(toRedeem > 0);
+        msg.sender.transfer(toRedeem);
+        prizeBalances[msg.sender] = 0;
+
+        PrizeRedeemed(msg.sender, toRedeem);
     }
 
     function prize() public constant returns (uint) {
