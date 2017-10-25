@@ -277,7 +277,7 @@ class LottoApp extends Component {
           drawing={this.state.drawing}
           redeemingPrize={this.state.redeemingPrize}
           ownerCollecting={this.state.ownerCollecting}
-          ownerCollectEnabled={this.state.instanceOwner === this.state.account}
+          isOwner={this.state.instanceOwner === this.state.account}
           />
       </div>
     );
@@ -342,7 +342,7 @@ const LottoComponent = ({
   maxNumber, prize, tickets, fee,
   onFillTicket, onDraw, onRedeemPrize, onOwnerCollect,
   fillingTicket, drawing, redeemingPrize, ownerCollecting,
-  ownerCollectEnabled
+  isOwner
 }) => {
   if (!maxNumber) {
     return (<div>Loading contract information...</div>);
@@ -353,8 +353,7 @@ const LottoComponent = ({
       {t.number}
     </span>
   ));
-
-  const drawEnabled = currentBlockNumber > deadlineBlockNumber && !drawing;
+  const drawEnabled = currentBlockNumber > deadlineBlockNumber && !drawing && isOwner;
 
   deadlineBlockNumber = deadlineBlockNumber || 'No lottery in progress';
 
@@ -399,7 +398,7 @@ const LottoComponent = ({
           <button className="button-large" onClick={onRedeemPrize}>Redeem prize</button>
         </div>
         <div className="column column-25">
-          <button className="button-large" onClick={onOwnerCollect} disabled={!ownerCollectEnabled}>
+          <button className="button-large" onClick={onOwnerCollect} disabled={!isOwner}>
             Owner collect
           </button>
         </div>
