@@ -7,7 +7,7 @@
     "test": "truffle test",
     "compile": "truffle compile",
     "migrate": "truffle migrate",
-    "testrpc": "cd testrpc && npm start",
+    "testrpc": "rimraf ./build/contracts/*.json && cd testrpc && npm start",
     "migrate:kovan": "truffle migrate --network kovan"
   },
   "devDependencies": {
@@ -16,6 +16,7 @@
     "@digix/tempo": "^0.2.0"
   },
   "dependencies": {
+    "rimraf": "^2.6.2",
     "truffle": "^3.4.9",
     "web3": "^0.20.1"
   }
