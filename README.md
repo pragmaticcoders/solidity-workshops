@@ -29,6 +29,8 @@ Runs `npm install` for `/webapp` and `/testrpc` in `postinstall` script.
 TestRPC acts like a local chain for testing and developement.
 It does not persist any state between runs.
 
+In addition to running TestRPC, this command also compiles and deploys contracts to TestRPC.
+
 ### Running tests
 
 `$ npm run test`
