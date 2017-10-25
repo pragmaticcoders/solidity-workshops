@@ -66,6 +66,7 @@ contract MicroLotto {
 
     function draw() public {
         require(block.number > deadlineBlock + 1);
+        require(deadlineBlock != 0);
 
         uint drawnNumber = random.generate(deadlineBlock + 1, maxNumber);
 
