@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import MicroLottoABI from '../../build/contracts/MicroLotto.json';
+import { deduplicate } from './utils/events';
 import getWeb3 from './utils/getWeb3';
 import { toWei, toEth } from './utils/units';
 
@@ -122,6 +123,9 @@ class LottoApp extends Component {
       fromBlock: 0,
       toBlock: 'latest',
     }).watch((err, event) => {
+      if (deduplicate(event)) {
+        return;
+      }
       console.log('event', event);
       this.loadPrize();
       if (event.event === 'Won') {
