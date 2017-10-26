@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Tasks</title>
+		<style>
+			body {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+h1, h2, h3 {
+	font-weight: 400;
+	margin-bottom: 0;
+}
+.remark-slide-content h1 { font-size: 3em; }
+.remark-slide-content h2 { font-size: 2em; }
+.remark-slide-content h3 { font-size: 1.6em; }
+.footnote {
+	position: absolute;
+	bottom: 3em;
+}
+li p { line-height: 1.25em; }
+.red { color: #fa0000; }
+.large { font-size: 2em; }
+a, a > code {
+	color: rgb(249, 38, 114);
+	text-decoration: none;
+}
+code {
+	background: none repeat scroll 0 0 #F8F8FF;
+  border: 1px solid #DEDEDE;
+  border-radius: 3px 	;
+  padding: 0 0.2em;
+}
+.remark-code, .remark-inline-code { font-family: "Bitstream Vera Sans Mono", "Courier", monospace; }
+.remark-code-line-highlighted     { background-color: #373832; }
+.pull-left {
+	float: left;
+	width: 47%;
+}
+.pull-right {
+	float: right;
+	width: 47%;
+}
+.pull-right ~ p {
+	clear: both;
+}
+#slideshow .slide .content code {
+	font-size: 0.8em;
+}
+#slideshow .slide .content pre code {
+	font-size: 0.9em;
+	padding: 15px;
+}
+.main-title, .title {
+	background: #272822;
+	color: #777872;
+	text-shadow: 0 0 20px #333;
+}
+.title h1, .title h2, .main-title h1, .main-title h2 {
+	color: #f3f3f3;
+	line-height: 0.8em;
+}
+/* Custom */
+.remark-code {
+	display: block;
+	padding: 0.5em;
+}
+
+		</style>
+	</head>
+	<body>
+		<textarea id="source">
+class: center, middle, main-title
+
+# Tasks
+
+---
+## First tasks: Make ticketFee configurable
+Right now ticket fee is hardcoded in `MicroLotto` constructor:
+
+```
+function MicroLotto(
+        Random _random,
+        uint _lottoFeePercent,
+        uint _maxNumber,
+        uint _lotteryDuration
+    ) {
+        require(_maxNumber >= 2);
+
+        owner = msg.sender;
+        random = _random;
+        ticketFee = 0.1 ether;
+        lottoFeePercent = _lottoFeePercent;
+        maxNumber = _maxNumber;
+        lotteryDuration = _lotteryDuration;
+    }
+```
+What we need to do:
+
+
+- Make ticketFee configurable
+
+Please remember to adjust migrations and tests while doing this tasks.
+
+
+---
+## Second task: Implement ownerCollect method
+```
+function ownerCollect() public {
+        // TODO: Implementation
+        OwnerCollected(0);
+    }
+```
+This method will be used by contract owner to collect his profits.
+
+What we need to do:
+
+
+- Make sure that only contract owner can call this method
+- Make sure that proper amount can be collected by owner (only profit from successful draws - you will need to tweak code in `draw` method)
+- Remember to emit correct event from that method
+- Writing tests is a big plus
+
+
+---
+## Third task: Implement redeemPrize method
+The last task would be to implement redeemPrize:
+
+```
+function redeemPrize() public {
+        // TODO: Implementation
+        PrizeRedeemed(msg.sender, 0);
+    }
+```
+This method will be used by players to collect their prizes.
+
+What we need to do:
+
+
+- Prepare a structure that will hold prizes
+- Reimplement logic of draw method
+
+
+---
+## It will require a partial rewrite of current `draw` method implementation:
+```
+function draw() public {
+if (wonTickets.length > 0) {
+    uint profit = prize() / wonTickets.length;
+
+    for (uint i = 0; i < wonTickets.length; i++) {
+        Ticket storage ticket = wonTickets[i];
+        // TODO: Do you see a problem here?
+        ticket.account.transfer(profit);
+        Won(ticket.account, drawnNumber, profit);
+    }
+
+    // TODO: Do you see another problem here?
+    accumulatedValue = 0;
+} else {
+    Cumulation(drawnNumber, accumulatedValue);
+}
+```
+
+		</textarea>
+		<script src="https://gnab.github.io/remark/downloads/remark-latest.min.js"></script>
+		<script>
+			var slideshow = remark.create();
+		</script>
+		<script></script>
+	</body>
+</html>

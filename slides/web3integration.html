@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>Web3&#x2F;Blockchain integration</title>
+		<style>
+			body {
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+h1, h2, h3 {
+	font-weight: 400;
+	margin-bottom: 0;
+}
+.remark-slide-content h1 { font-size: 3em; }
+.remark-slide-content h2 { font-size: 2em; }
+.remark-slide-content h3 { font-size: 1.6em; }
+.footnote {
+	position: absolute;
+	bottom: 3em;
+}
+li p { line-height: 1.25em; }
+.red { color: #fa0000; }
+.large { font-size: 2em; }
+a, a > code {
+	color: rgb(249, 38, 114);
+	text-decoration: none;
+}
+code {
+	background: none repeat scroll 0 0 #F8F8FF;
+  border: 1px solid #DEDEDE;
+  border-radius: 3px 	;
+  padding: 0 0.2em;
+}
+.remark-code, .remark-inline-code { font-family: "Bitstream Vera Sans Mono", "Courier", monospace; }
+.remark-code-line-highlighted     { background-color: #373832; }
+.pull-left {
+	float: left;
+	width: 47%;
+}
+.pull-right {
+	float: right;
+	width: 47%;
+}
+.pull-right ~ p {
+	clear: both;
+}
+#slideshow .slide .content code {
+	font-size: 0.8em;
+}
+#slideshow .slide .content pre code {
+	font-size: 0.9em;
+	padding: 15px;
+}
+.main-title, .title {
+	background: #272822;
+	color: #777872;
+	text-shadow: 0 0 20px #333;
+}
+.title h1, .title h2, .main-title h1, .main-title h2 {
+	color: #f3f3f3;
+	line-height: 0.8em;
+}
+/* Custom */
+.remark-code {
+	display: block;
+	padding: 0.5em;
+}
+
+		</style>
+	</head>
+	<body>
+		<textarea id="source">
+class: center, middle, main-title
+
+# Web3/Blockchain integration
+
+---
+## Metamask
+Metamask is a bridge that allows running dApps in browser, without running full Ethereum node.
+
+Metamask is also a hierarchical deterministic wallet, created from the seed (e.g. spike dizzy clump wrist receive limb interest half item lunch betray vivid).
+
+With Metamask you can connect with local networks, test networks or with Mainnet. 
+
+```
+const MAINET_RPC_URL = 'https://mainnet.infura.io/metamask'
+const ROPSTEN_RPC_URL = 'https://ropsten.infura.io/metamask'
+const KOVAN_RPC_URL = 'https://kovan.infura.io/metamask'
+const RINKEBY_RPC_URL = 'https://rinkeby.infura.io/metamask'
+```
+[![Architecture Diagram](https://github.com/MetaMask/metamask-extension/blob/master/docs/architecture.png)][1]
+
+
+---
+## Web3
+Web3 is the Etehreum compatible Javascript API, it allows your web application to interact with blockchain via JSON RPC.
+
+Metamask injects it&#39;s own web3 instance, so in webapp we&#39;re using it for interaction with blockchain.
+
+```
+if (typeof web3 !== 'undefined') {
+  App.web3Provider = web3.currentProvider;
+  web3 = new Web3(web3.currentProvider);
+} else {
+  // If no injected web3 instance is detected, fallback to the TestRPC.
+  App.web3Provider = new web3.providers.HttpProvider('http://localhost:8545');
+  web3 = new Web3(App.web3Provider);
+}
+```
+
+---
+## Interacting with contracts from webapp
+To interact with contract, first we need contract ABI
+
+```
+import MicroLottoABI from '../../build/contracts/MicroLotto.json';
+```
+After importing JSON ABI of our contract, we can load it and use from our app
+
+```
+const loadContract = require('truffle-contract');
+const MicroLottoContract = loadContract(MicroLottoABI);
+MicroLottoContract.setProvider(web3.currentProvider);
+
+const instance = await MicroLottoContract.deployed();
+```
+
+---
+## Example usage:
+```
+const maxNumber = (await instance.maxNumber.call()).toNumber();
+
+const instanceOwner = await instance.owner.call();
+
+const prizeWei = await instance.prize.call();
+const prize = toEth(prizeWei).toNumber();
+
+instance.fillTicket(
+      number, {
+        value: toWei(this.state.fee),
+        gas: 200000,
+        from: this.state.account
+      }
+    );
+```
+
+---
+## Listening for contract events:
+```
+this.state.instance.allEvents({
+    fromBlock: 0,
+    toBlock: 'latest',
+  }).watch((err, event) => {
+      console.log('event', event);
+      this.loadPrize();
+      if (event.event === 'Won') {
+        this.handleWonEvent(event);
+      } else if (event.event === 'Cumulation') {
+        this.handleCumulationEvent(event);
+      } else if (event.event === 'TicketFilled') {
+        this.handleTicketFilledEvent(event);
+      } else if (event.event === 'PrizeRedeemed') {
+        this.handlePrizeRedeemedEvent(event);
+      } else if (event.event === 'OwnerCollected') {
+        this.handleOwnerCollectedEvent(event);
+      } else {
+        console.error('Unknown event', event);
+      }
+  });
+```
+
+		</textarea>
+		<script src="https://gnab.github.io/remark/downloads/remark-latest.min.js"></script>
+		<script>
+			var slideshow = remark.create();
+		</script>
+		<script></script>
+	</body>
+</html>
