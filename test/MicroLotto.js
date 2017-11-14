@@ -14,6 +14,7 @@ const MAX_NUMBER = 10;
 const LOTTERY_DURATION = 10;
 
 const TICKET_FEE_WEI = web3.toWei(0.1, 'ether');
+const EXPECTED_TICKET_FEE_WEI = web3.toWei(0.1, 'ether');
 
 const LOTTO_FEE_PERCENT = 0.01;
 const LOTTO_FEE_PERCENT_WEI = web3.toWei(LOTTO_FEE_PERCENT, 'ether');
@@ -40,8 +41,14 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
       LOTTO_FEE_PERCENT_WEI,
       MAX_NUMBER,
       LOTTERY_DURATION,
+      TICKET_FEE_WEI,
       { from: OWNER }
     );
+  });
+
+  it('Should create lotto object with ticketFee', async () => {
+    const ticketFee = await lotto.ticketFee();
+    assert.equal(ticketFee, EXPECTED_TICKET_FEE_WEI);
   });
 
   context(`Given filled ticket on expected number ${EXPECTED_NUMBER}`, () => {
