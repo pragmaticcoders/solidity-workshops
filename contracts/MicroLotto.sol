@@ -98,8 +98,11 @@ contract MicroLotto {
     function ownerCollect() public {
         // TODO: Implementation
         // Make sure that only owner can call this method
+        require(msg.sender == owner);
         // Make sure that correct amount can be collected
-        OwnerCollected(0);
+        uint realValue = accumulatedValue - prize();
+        owner.transfer(realValue);
+        OwnerCollected(realValue);
     }
 
     function redeemPrize() public {
