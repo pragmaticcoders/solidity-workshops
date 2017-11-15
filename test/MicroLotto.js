@@ -7,7 +7,7 @@ const {
   assertThrowsInvalidOpcode,
   assertNumberEqual,
   assertValueEqual,
-  assertValueAlmostEqual
+  assertValueAlmostEqual,
 } = require('./Helpers.js');
 
 const MAX_NUMBER = 10;
@@ -21,19 +21,20 @@ const LOTTO_FEE_PERCENT_WEI = web3.toWei(LOTTO_FEE_PERCENT, 'ether');
 
 const EXPECTED_PRIZE = TICKET_FEE_WEI - (LOTTO_FEE_PERCENT * TICKET_FEE_WEI);
 
-
 contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FEE_PERCENT}`, accounts => {
   const OWNER = accounts[0];
   const PLAYER = accounts[1];
   const EXPECTED_NUMBER = 1;
   const UNLUCKY_NUMBER = 2;
+  const EXPECTED_BALANCE = web3.toWei(5, 'ether');
+  const EXPECTED_MAX_FUNCTION_FEE = web3.toWei(0.01, 'ether');
 
   let lotto;
   let initialBalance;
 
   beforeEach(async () => {
     const random = await RandomMock.new(EXPECTED_NUMBER, {
-      from: OWNER
+      from: OWNER,
     });
 
     lotto = await MicroLotto.new(
@@ -48,7 +49,19 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
 
   it('Should create lotto object with ticketFee', async () => {
     const ticketFee = await lotto.ticketFee();
-    assert.equal(ticketFee, EXPECTED_TICKET_FEE_WEI);
+    assert.equal(TICKET_FEE_WEI, EXPECTED_TICKET_FEE_WEI);
+  });
+
+  it('Should transfer ether from contract address to owner address', async () => {
+    const balanceBefore = await getBalance(OWNER);
+    await lotto.ownerCollect();
+    const balanceAfter = await getBalance(OWNER);
+    assertValueAlmostEqual(balanceBefore, balanceAfter, EXPECTED_MAX_FUNCTION_FEE);
+  });
+
+  it('Should exit when ownerCollect is called by not owner user', async () => {
+    const action = lotto.ownerCollect.bind(lotto, { from: PLAYER });
+    assertThrowsInvalidOpcode(action);
   });
 
   context(`Given filled ticket on expected number ${EXPECTED_NUMBER}`, () => {
