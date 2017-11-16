@@ -39,7 +39,7 @@ contract MicroLotto {
 
         owner = msg.sender;
         random = _random;
-        ticketFee = _ticketFee; // 0.1 ether;  // TODO: Make it configurable during deployment
+        ticketFee = _ticketFee;
         lottoFeePercent = _lottoFeePercent;
         maxNumber = _maxNumber;
         lotteryDuration = _lotteryDuration;
@@ -82,8 +82,6 @@ contract MicroLotto {
                 Ticket storage ticket = wonTickets[i];
                 address ticketAccount = ticket.account;
                 
-                // TODO: Do you see a problem here?
-                // ticket.account.transfer(profit);
                 wonPrizes[ticketAccount] = profit;
                 Won(ticket.account, drawnNumber, profit);
             }
@@ -100,20 +98,18 @@ contract MicroLotto {
     }
 
     function ownerCollect() public {
-        // TODO: Implementation
-        // Make sure that only owner can call this method
         require(msg.sender == owner);
-        // Make sure that correct amount can be collected
+
         uint realValue = accumulatedValue - prize();
+
         owner.transfer(realValue);
         OwnerCollected(realValue);
     }
 
     function redeemPrize() public {
-        // TODO: Implementation
         uint wonPrize = wonPrizes[msg.sender];
+
         if (wonPrize > 0) {
-            require(wonPrize > 0);
             msg.sender.transfer(wonPrize);
             PrizeRedeemed(msg.sender, wonPrize);
         }
