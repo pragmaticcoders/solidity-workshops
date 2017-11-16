@@ -113,6 +113,14 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
 
     });
 
+    it('Should be able to redeem prize', async () => {
+      const balanceBefore = await getBalance(PLAYER);
+      await lotto.redeemPrize({ from: PLAYER });
+      const wonPrize = await lotto.wonPrizes(PLAYER);
+      const balanceAfter = await getBalance(PLAYER);
+      assertValueAlmostEqual(balanceBefore, balanceAfter - wonPrize, EXPECTED_MAX_FUNCTION_FEE);
+    });
+
   });
 
   context(`Given filled ticket for unlucky number ${UNLUCKY_NUMBER}`, () => {
