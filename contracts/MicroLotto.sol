@@ -82,7 +82,9 @@ contract MicroLotto {
                 Ticket storage ticket = wonTickets[i];
                 address ticketAccount = ticket.account;
                 
-                wonPrizes[ticketAccount] = profit;
+                if (wonPrizes[ticketAccount] > 0) wonPrizes[ticketAccount] += profit;
+                else wonPrizes[ticketAccount] = profit;
+
                 Won(ticket.account, drawnNumber, profit);
             }
 
