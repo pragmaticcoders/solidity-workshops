@@ -4,6 +4,7 @@ const {
   mineBlocks,
   getBalance,
   getEventFromLogs,
+  assertInvalidOpcode,
   assertThrowsInvalidOpcode,
   assertNumberEqual,
   assertValueEqual,
@@ -26,6 +27,8 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
   const PLAYER = accounts[1];
   const EXPECTED_NUMBER = 1;
   const UNLUCKY_NUMBER = 2;
+  const EXPECTED_BALANCE = web3.toWei(5, 'ether');
+  const EXPECTED_MAX_FUNCTION_FEE = web3.toWei(0.01, 'ether');
 
   let lotto;
   let initialBalance;
@@ -125,8 +128,20 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
 
   });
 
-});
+  it('Should transfer ether from contract address to owner address', async () => {
+    const balanceBefore = await getBalance(OWNER);
+    await lotto.ownerCollect();
+    const balanceAfter = await getBalance(OWNER);
+    assertValueAlmostEqual(balanceBefore, balanceAfter, EXPECTED_MAX_FUNCTION_FEE);
+  });
 
+  it('Should exit when ownerCollect is called by not owner user', async () => {
+    await assertThrowsInvalidOpcode(async () => {
+      await lotto.ownerCollect({ from: PLAYER });
+    });
+  });
+
+});
 
 async function waitUntilClosed () {
   await mineBlocks(LOTTERY_DURATION + 1);
