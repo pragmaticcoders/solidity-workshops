@@ -12,7 +12,8 @@ async function deploy(deployer) {
     Random.address,
     LOTTO_FEE_PERCENT,
     MAX_NUMBER,
-    LOTTERY_DURATION
+    LOTTERY_DURATION,
+    web3.toWei(0.1, 'ether')
   );
 }
 

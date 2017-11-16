@@ -20,6 +20,7 @@ contract MicroLotto {
     uint public maxNumber;
     uint public deadlineBlock = 0;
     mapping(uint => Ticket[]) public ticketsPerNumber;
+    mapping(address => uint) public wonPrizes;
 
     event TicketFilled(address indexed account, uint selectedNumber);
     event Won(address indexed account, uint selectedNumber, uint profit);
@@ -31,13 +32,14 @@ contract MicroLotto {
         Random _random,
         uint _lottoFeePercent,
         uint _maxNumber,
-        uint _lotteryDuration
+        uint _lotteryDuration,
+        uint _ticketFee
     ) {
         require(_maxNumber >= 2);
 
         owner = msg.sender;
         random = _random;
-        ticketFee = 0.1 ether;  // TODO: Make it configurable during deployment
+        ticketFee = _ticketFee;
         lottoFeePercent = _lottoFeePercent;
         maxNumber = _maxNumber;
         lotteryDuration = _lotteryDuration;
@@ -78,8 +80,11 @@ contract MicroLotto {
 
             for (uint i = 0; i < wonTickets.length; i++) {
                 Ticket storage ticket = wonTickets[i];
-                // TODO: Do you see a problem here?
-                ticket.account.transfer(profit);
+                address ticketAccount = ticket.account;
+                
+                if (wonPrizes[ticketAccount] > 0) wonPrizes[ticketAccount] += profit;
+                else wonPrizes[ticketAccount] = profit;
+
                 Won(ticket.account, drawnNumber, profit);
             }
 
@@ -95,15 +100,21 @@ contract MicroLotto {
     }
 
     function ownerCollect() public {
-        // TODO: Implementation
-        // Make sure that only owner can call this method
-        // Make sure that correct amount can be collected
-        OwnerCollected(0);
+        require(msg.sender == owner);
+
+        uint realValue = accumulatedValue - prize();
+
+        owner.transfer(realValue);
+        OwnerCollected(realValue);
     }
 
     function redeemPrize() public {
-        // TODO: Implementation
-        PrizeRedeemed(msg.sender, 0);
+        uint wonPrize = wonPrizes[msg.sender];
+
+        if (wonPrize > 0) {
+            msg.sender.transfer(wonPrize);
+            PrizeRedeemed(msg.sender, wonPrize);
+        }
     }
 
     function prize() public constant returns (uint) {
