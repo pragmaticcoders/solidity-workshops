@@ -21,7 +21,9 @@ const LOTTO_FEE_PERCENT_WEI = web3.toWei(LOTTO_FEE_PERCENT, 'ether');
 
 const EXPECTED_PRIZE = TICKET_FEE_WEI - (LOTTO_FEE_PERCENT * TICKET_FEE_WEI);
 
-contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FEE_PERCENT}`, accounts => {
+contract(
+  `MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FEE_PERCENT}`,
+  accounts => {
   const OWNER = accounts[0];
   const PLAYER = accounts[1];
   const EXPECTED_NUMBER = 1;
@@ -99,7 +101,7 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
       beforeEach(async () => {
         await waitUntilClosed();
         drawResult = await lotto.draw({
-          from: PLAYER
+          from: PLAYER,
         });
       });
 
@@ -138,7 +140,7 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
       beforeEach(async () => {
         await waitUntilClosed();
         drawResult = await lotto.draw({
-          from: PLAYER
+          from: PLAYER,
         });
       });
 
@@ -148,14 +150,10 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
         assertNumberEqual(event.args.drawnNumber, EXPECTED_NUMBER);
         assertNumberEqual(event.args.value, TICKET_FEE_WEI);
       });
-
     });
-
   });
-
 });
 
-
-async function waitUntilClosed () {
+async function waitUntilClosed() {
   await mineBlocks(LOTTERY_DURATION + 1);
 }
