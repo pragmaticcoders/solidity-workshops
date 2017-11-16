@@ -7,7 +7,7 @@ const {
   assertThrowsInvalidOpcode,
   assertNumberEqual,
   assertValueEqual,
-  assertValueAlmostEqual
+  assertValueAlmostEqual,
 } = require('./Helpers.js');
 
 const MAX_NUMBER = 10;
@@ -20,8 +20,9 @@ const LOTTO_FEE_PERCENT_WEI = web3.toWei(LOTTO_FEE_PERCENT, 'ether');
 
 const EXPECTED_PRIZE = TICKET_FEE_WEI - (LOTTO_FEE_PERCENT * TICKET_FEE_WEI);
 
-
-contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FEE_PERCENT}`, accounts => {
+contract(
+  `MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FEE_PERCENT}`,
+  accounts => {
   const OWNER = accounts[0];
   const PLAYER = accounts[1];
   const EXPECTED_NUMBER = 1;
@@ -32,7 +33,7 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
 
   beforeEach(async () => {
     const random = await RandomMock.new(EXPECTED_NUMBER, {
-      from: OWNER
+      from: OWNER,
     });
 
     lotto = await MicroLotto.new(
@@ -40,8 +41,14 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
       LOTTO_FEE_PERCENT_WEI,
       MAX_NUMBER,
       LOTTERY_DURATION,
+      TICKET_FEE_WEI,
       { from: OWNER }
     );
+  });
+
+  it('Should create lotto object with ticketFee', async () => {
+    const ticketFee = await lotto.ticketFee();
+    assert.equal(ticketFee, TICKET_FEE_WEI);
   });
 
   context(`Given filled ticket on expected number ${EXPECTED_NUMBER}`, () => {
@@ -79,7 +86,7 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
       beforeEach(async () => {
         await waitUntilClosed();
         drawResult = await lotto.draw({
-          from: PLAYER
+          from: PLAYER,
         });
       });
 
@@ -110,7 +117,7 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
       beforeEach(async () => {
         await waitUntilClosed();
         drawResult = await lotto.draw({
-          from: PLAYER
+          from: PLAYER,
         });
       });
 
@@ -127,7 +134,6 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
 
 });
 
-
-async function waitUntilClosed () {
+async function waitUntilClosed() {
   await mineBlocks(LOTTERY_DURATION + 1);
 }

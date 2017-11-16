@@ -31,13 +31,14 @@ contract MicroLotto {
         Random _random,
         uint _lottoFeePercent,
         uint _maxNumber,
-        uint _lotteryDuration
+        uint _lotteryDuration,
+        uint _ticketFee
     ) {
         require(_maxNumber >= 2);
 
         owner = msg.sender;
         random = _random;
-        ticketFee = 0.1 ether;  // TODO: Make it configurable during deployment
+        ticketFee = _ticketFee;
         lottoFeePercent = _lottoFeePercent;
         maxNumber = _maxNumber;
         lotteryDuration = _lotteryDuration;
