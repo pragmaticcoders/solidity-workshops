@@ -78,13 +78,12 @@ contract MicroLotto {
 
             for (uint i = 0; i < wonTickets.length; i++) {
                 Ticket storage ticket = wonTickets[i];
+
+                accumulatedValue -= profit;
                 // TODO: Do you see a problem here?
                 ticket.account.transfer(profit);
                 Won(ticket.account, drawnNumber, profit);
             }
-
-            // TODO: Do you see another problem here?
-            accumulatedValue = 0;
         } else {
             Cumulation(drawnNumber, accumulatedValue);
         }
@@ -95,10 +94,12 @@ contract MicroLotto {
     }
 
     function ownerCollect() public {
-        // TODO: Implementation
-        // Make sure that only owner can call this method
-        // Make sure that correct amount can be collected
-        OwnerCollected(0);
+        require(msg.sender == owner);
+
+        uint realValue = accumulatedValue - prize();
+
+        owner.transfer(realValue);
+        OwnerCollected(realValue);
     }
 
     function redeemPrize() public {
