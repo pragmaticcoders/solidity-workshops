@@ -20,6 +20,7 @@ contract MicroLotto {
     uint public maxNumber;
     uint public deadlineBlock = 0;
     mapping(uint => Ticket[]) public ticketsPerNumber;
+    mapping(address => uint) public wonPrizes;
 
     event TicketFilled(address indexed account, uint selectedNumber);
     event Won(address indexed account, uint selectedNumber, uint profit);
@@ -78,13 +79,9 @@ contract MicroLotto {
 
             for (uint i = 0; i < wonTickets.length; i++) {
                 Ticket storage ticket = wonTickets[i];
-                // TODO: Do you see a problem here?
-                ticket.account.transfer(profit);
+                wonPrizes[ticket.account] += profit;
                 Won(ticket.account, drawnNumber, profit);
             }
-
-            // TODO: Do you see another problem here?
-            accumulatedValue = 0;
         } else {
             Cumulation(drawnNumber, accumulatedValue);
         }
@@ -102,8 +99,12 @@ contract MicroLotto {
     }
 
     function redeemPrize() public {
-        // TODO: Implementation
-        PrizeRedeemed(msg.sender, 0);
+        uint wonPrize = wonPrizes[msg.sender];
+        if (wonPrize > 0) {
+           accumulatedValue -= wonPrize;
+           msg.sender.transfer(wonPrize);
+        }
+        PrizeRedeemed(msg.sender, wonPrize);
     }
 
     function prize() public constant returns (uint) {

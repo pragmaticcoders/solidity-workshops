@@ -26,6 +26,7 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
   const PLAYER = accounts[1];
   const EXPECTED_NUMBER = 1;
   const UNLUCKY_NUMBER = 2;
+  const EXPECTED_MAX_FUNCTION_FEE = web3.toWei(0.01, 'ether');
 
   let lotto;
   let initialBalance;
@@ -73,6 +74,13 @@ contract(`MicroLotto with max number of ${MAX_NUMBER} and fee percent ${LOTTO_FE
       assertNumberEqual(deadline, event.blockNumber + LOTTERY_DURATION);
     });
 
+    it('Should be able to redeem a prize', async () => {
+      const balanceBefore = await getBalance(PLAYER);
+      await lotto.redeemPrize({ from: PLAYER });
+      const wonPrize = await lotto.wonPrizes(PLAYER);
+      const balanceAfter = await getBalance(PLAYER);
+      assertValueAlmostEqual(balanceBefore, balanceAfter - wonPrize, EXPECTED_MAX_FUNCTION_FEE);
+    });
     context('Given draw invoked', async () => {
       let drawResult;
 
